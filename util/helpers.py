@@ -4,9 +4,9 @@ from werkzeug.utils import secure_filename
 
 s3 = boto3.client(
     service_name = "s3", 
-    aws_access_key_id = os.getenv("AWS_ACCESS_KEY"), 
-    aws_secret_access_key = os.getenv("AWS_SECRET_KEY"),
-    region_name = os.getenv("AWS_REGION")
+    aws_access_key_id = 'AKIAS66UDDUB4LU73VWI', 
+    aws_secret_access_key = "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",
+    region_name = "ap-southeast-1"
 )
 
 def upload_file_to_s3(file, acl = "public-read"):
@@ -14,7 +14,7 @@ def upload_file_to_s3(file, acl = "public-read"):
     try:
         s3.upload_fileobj(
             file, 
-            os.getenv("AWS_S3_BUCKET_NAME"), 
+            'runpod-hizkia-fileupload', 
             file.filename, 
             ExtraArgs = {
                 "ACL": acl, 
@@ -23,6 +23,9 @@ def upload_file_to_s3(file, acl = "public-read"):
         )
     except Exception as e: 
         print('Something Happened: ', e)
+        print("File:", file)
+        print("Filename:", filename)
+        print("Content Type:", file.content_type)
         return e 
     
     return file.filename

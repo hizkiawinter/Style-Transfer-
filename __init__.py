@@ -1,9 +1,12 @@
 import os
+import requests
 import boto3
 from flask import Flask, render_template, flash, redirect, url_for, request
 from flaskr.util.helpers import upload_file_to_s3
 
 ALLOWED_EXTENSIONS = {'mp4', 'txt'}
+api_key = "rpa_GMKSO34M7GNLYU4HY00KN034H1UO579MWAZE1S7I62n7j4"
+endpoint_id = "ug6077te9sjg9g"
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -40,19 +43,22 @@ def create_app(test_config=None):
 
         if file.filename == '':
             flash('No selected title')
-            return "Gagal"
+            return "Tidak ada namafile"
 
         if file and allowed_file(file.filename):
             output = upload_file_to_s3(file)
 
             if output:
                 flash("Success upload")
-                return "Sukses"
+                url = f"https://api.runpod.ai/v2/{endpoint_id}/health"
+                headers = {"Authorization": f"Bearer {api_key}"}
+                response = requests.get(url, headers=headers)
+                return render_template("upload_success.html", response = response)
             else:
                 flash("Unable to upload")
-                return "Gagal"
+                return "Gagal upload"
         else:
             flash("Extension not accepted")
-            return "Gagal"
+            return "Ekstensi tidak didukung"
 
     return app
