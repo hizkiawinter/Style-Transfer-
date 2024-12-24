@@ -6,10 +6,69 @@ import json
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from flaskr.util.helpers import upload_file_to_s3
 
-ALLOWED_EXTENSIONS = {'mp4', 'txt', 'jpg'}
-api_key = "[API KEY RUNPOD]"
-endpoint_id = "[ENDPOINT RUNPOD ID]"
+ALLOWED_EXTENSIONS = {'mp4', 'txt', 'jpg', 'png'}
+api_key = "[runpod_api_key]"
+endpoint_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/runsync"
 
+headers = {
+    "Authorization" : f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+data = {
+     "input": {
+        "workflow": {
+              "165": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "172",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "172": {
+    "inputs": {
+      "detect_hand": "enable",
+      "detect_body": "enable",
+      "detect_face": "enable",
+      "resolution": 512,
+      "bbox_detector": "yolox_l.onnx",
+      "pose_estimator": "dw-ll_ucoco_384_bs5.torchscript.pt",
+      "scale_stick_for_xinsr_cn": "disable",
+      "image": [
+        "177",
+        0
+      ]
+    },
+    "class_type": "DWPreprocessor",
+    "_meta": {
+      "title": "DWPose Estimator"
+    }
+  },
+  "177": {
+    "inputs": {
+      "video": "https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/htpsfb1r3bwa1.png",
+      "force_rate": 0,
+      "force_size": "Disabled",
+      "custom_width": 512,
+      "custom_height": 512,
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 1
+    },
+    "class_type": "VHS_LoadVideoPath",
+    "_meta": {
+      "title": "Load Video (Path) 🎥🅥🅗🅢"
+    }
+  }
+        }
+    }
+}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -52,14 +111,12 @@ def create_app(test_config=None):
 
             if output:
                 flash("Success upload")
-                url = "https://api.comfydeploy.com/api/sessions"
-                headers = {
-                    'Authorization': "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcl8ycFcxMVZWNlZiN2xJQm1SZVpSRWx6VWtsRFQiLCJpYXQiOjE3MzMzNjk1MDh9.YMr6B7ISUEeVTkH5b8qcKGt94Vmb1bJiHdgJp0K4qdU",
-                    'Content-Type': 'application/json'
-                }
-                res = requests.get(url, headers=headers)
-                print(f"Response code : {res.status_code}")
-                return render_template('upload_success.html')
+                response = requests.post(endpoint_url, headers=headers, data=json.dumps(data))
+                if(response.status_code == 200):
+                    print("Request Successful: ", response.json())
+                else:
+                    print(f"Request failed with status code {response.status_code} : {response}")
+                return render_template('upload_success.html', response_data = response.json())
             else:
                 flash("Unable to upload")
                 return "Gagal upload"

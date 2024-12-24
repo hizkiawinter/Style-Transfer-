@@ -5,9 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sukses</title>
 </head>
+<style>
+    /* Style the container to arrange images vertically */
+    .response-container {
+        white-space: pre-wrap;        /* Preserve whitespace and wrap the text */
+            word-wrap: break-word;        /* Break long words/strings (like base64) */
+            max-width: 100%;              /* Prevent overflow */
+            background-color: #f4f4f4;   /* Light background color */
+            padding: 20px;                /* Padding for better readability */
+            border: 1px solid #ccc;      /* Border for the container */
+            font-family: monospace;       /* Monospace font for better JSON readability */
+            font-size: 14px;              /* Adjust font size */
+    }
+    
+    img {
+        max-width: 100%; /* Ensure images are responsive */
+        height: auto;
+        border: 1px solid #ccc; /* Optional: add a border for better visibility */
+    }
+</style>
+
 <body>
     <h1>siswa GO sukses</h1>
-    <h2>{{response_json}}</h2>
-    <h2>{{content}}</h2>
+    <div class= "response-container"> {{response_data.output.message}} </div>
+    {% if response_data.output.message %}
+        <h2>Image Preview:</h2>
+        <!-- Display the base64 image as an image element -->
+        <img src="data:image/png;base64, {{ response_data.output.message }}" width="400" height="400" alt="Base64 Image">
+    {% else %}
+        <p>No image to display or invalid base64 data.</p>
+    {% endif %}
+    <!-- <img src="data:image/png;base64, {{response_data.output.message}}" width="400" height="400"> -->
 </body>
 </html>
