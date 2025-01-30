@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" type="text/css">
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="title-container">
+            <p>SISWA GO</p>
+            <p class="header-sub-title" id="word"></p><p class="header-title blink">|</p>
+        </div>
+        <a class="button-50" href="{{ url_for('index') }}" role="button">Get Started</a>
+    </div>
+</body>
+</html>
