@@ -1,7 +1,7 @@
-@import 'https://fonts.googleapis.com/css?family=Roboto';
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 body {
-    background-color: white;
+    background-color: black;
     overflow: hidden;
     position: absolute;
     width: 100%;
@@ -31,9 +31,10 @@ body {
 }
 
 p, .header-title {
-    color: black;
-    font-family: "BlinkMacSystemFont";
+    color: white;
+    font-family: "Montserrat", serif;
     font-size: 100px;
+    font-weight: 700;
     padding: 0;
     margin: 0;
     text-align: center;
@@ -51,11 +52,11 @@ p, .header-title {
 /* Button styling */
 .button-50 {
     appearance: button;
-    background-color: #000;
-    border: 1px solid #000;
+    background-color: #fff;
+    border: 1px solid #fff;
     border-radius: 4px;
-    box-shadow: #fff 4px 4px 0 0,#000 4px 4px 0 1px;
-    color: #fff;
+    box-shadow: #000 4px 4px 0 0,#fff 4px 4px 0 1px;
+    color: #000;
     cursor: pointer;
     font-family: Arial, sans-serif;
     font-size: 14px;
@@ -70,4 +71,8 @@ p, .header-title {
 .button-50:active {
     box-shadow: rgba(0, 0, 0, .125) 0 3px 5px inset;
     transform: translate(2px, 2px);
+}
+
+a{
+    text-decoration: none;
 }
