@@ -40,7 +40,19 @@
 
     </div>
     <div class="content">
-
+      
+      <div hidden >
+        <div data-name="popover-content">
+            <div class="input-group">
+            <input type="text" class="form-control form-control-sm" placeholder="Search" name="search">
+            <div class="input-group-btn">
+                <button class="btn btn-danger" type="submit">
+                <i class="bi bi-search fa fa-search"></i>
+                </button>
+            </div>
+            </div>
+        </div>
+    </div>
       <div class="buttonPop" data-toggle="popover" data-bs-placement="bottom" data-bs-trigger ="hover" data-bs-content="S3, Twitter, Youtube, Tiktok">
         <button type="button" id= popoverButton class="btn btn-secondary" size= small data-container="body" >
            +
@@ -62,7 +74,7 @@
       </div>
 
       <div class= "upload">
-      <a href="https://www.youtube.com/watch?v=j1ZHuyhHApg">do you want to upload file instead?</a>
+      <a href="{{ url_for('upload') }}" id="upload-file">do you want to upload file instead?</a>
       </div>
 
       <div class="footer">
@@ -105,5 +117,5 @@ const handleButtonClick = (e) => {
 }
 
 clearButton.addEventListener("click", handleButtonClick)
-
 </script>
+

@@ -142,6 +142,7 @@ input{
 .sideBar a:hover:not(.active) {
   background-color: #555;
   color: white;
+  border-radius: 10px;
 }
 
 .form-container i {
@@ -162,7 +163,8 @@ input{
 
 #rusa{
   height:250px; 
- width:250px; 
+  width:250px; 
+  
 }
 
 .upload{
