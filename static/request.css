@@ -43,18 +43,16 @@ html {
   }
 
   .content {
-    background: white;
+    background-image: linear-gradient(#e8f0ff 0%, white 52.08%);
     height: 100%; 
     width: 90%; 
     display: flex;
-    justify-content: center;
-    align-items: center;
+
     border-top-left-radius: 12px; /* Rounded edges */
     border-bottom-left-radius: 12px;
     flex: 1 0 auto; /* Enable grow, disable shrink */
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
-    padding-right: 500px;
-    padding-top: 100px
+    
   }
 
   .sideBar a {
@@ -120,122 +118,75 @@ html {
     border-radius: 10px;
   }
 
-  .drag-area{
-    display: flex;
-    align-items: center;
+  .video-container{
+    display: flex; 
+    width: 100%;
     justify-content: center;
-    min-height: 20vh;
-    flex-direction: column;
-    color: #000;
-    cursor: pointer;
+    padding-top: 50px;
   }
 
-  .file-container{
+  .video-output{
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 20%;
-    background:#f0f0f0;
-    width: 25%;
-    border: 2px dashed #b4b4b4;
-    border-radius: 10%;
-    cursor: pointer;
-    z-index: 1;
-
+    padding-left: 50px;
   }
 
-  .drag-area .header{
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 17px;
-  }
-
-  .drag-area .icon{
-    margin-top: -25px;
-    font-size: 25px;
-  }
-
-  .drag-area .support{
+  .divider{
     display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Courier New', Courier, monospace  ;
-    color: #6b6b6b;
-    font-size: 13px;
-   
+    position: absolute;
+    width: 95%;
+    justify-content: start;
+    padding-left: 30px;
+    padding-top: 20px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 30px;
   }
 
-  .file-container:hover{
-    background: #e0e0e0;
+  .lg-toolbar-next:before {
+    content: "\e094";
+  }
+  .lg-toolbar-prev:before {
+    content: "\e095";
   }
   
-  #rusa{
-    height:250px; 
-    width:250px; 
+  /** Below CSS is completely optional **/
+  
+  .gallery-item {
+    width: 200px;
+    padding: 5px;
+    cursor: pointer;
   }
 
-  .logo{
-    position:absolute;
+  .gallery{
     display: flex;
-    height:250px; 
-    width:250px; 
-    justify-content: center;
+    position: absolute;
+    width: 95%;
+    padding-top: 500px;
+    padding-left: 30px;
+  }
+
+  .controlnet{
+    display: flex;
+    position: absolute;
+    overflow: hidden; 
+    justify-content: start;
+    align-self: center;
+    flex-direction: coloumn;
+    height: 100%;
+    width: 95%;
+    padding-top: 350px; 
+    padding-left: 30px;
+  }
+
+  .pswp-gallery{
+    display: flex; 
+    position: absolute;
+    width: 100%;
     align-items: center;
-    padding-bottom: 320px;
-    z-index: 0;
-  }
-
-  .information{
-    position: absolute;
-    display: flex;
     justify-content: center;
-    align-items: left;
-    min-height: 20vh;
-    flex-direction: column;
-    padding-left: 930px ;
-    padding-bottom: 165px;
+    padding-right:50px;
+    padding-top: 80px;
+    flex-wrap: wrap;
+    gap: 30px;
   }
-
-  .information .explanation{
-    display: flex;
-    flex-direction: column;
-    padding-left: 30px ;
-    font-family: 'Courier New', Courier, monospace;
-    color: #747373;
-  }
-
-  .information .title{
-    font-size: 17px;
-    font-family: 'Courier New', Courier, monospace;
-  }
-
-  .information i{
-    font-size: 20px;
-    padding-top: 15px;
-  }
-
-  .file-container.active{
-    border: 2px solid #a7a7a7 ;
-  }
-
-
-  #box {
-    width: 335px;
-    height: 200px;
-    margin: 10px;
-    position: absolute;
-    overflow: hidden;    
-}
-#file {
-    width: 500px;
-    height: 95%;
-    background: rgba(150,225,150,0.5);
-    vertical-align: middle;
-    text-align: start;
-    padding: 0 20%;
-    margin-top: -200px;
-    color: #FFF;
-    font-weight: bold;
-    font-size: 400px;
-    opacity: 0;
-}
-
+  
+  
