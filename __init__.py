@@ -3,8 +3,8 @@ import requests
 import json 
 import random
 import string 
-from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
-from flaskr.util.helpers import upload_file_to_s3, get_file, show_image, show_video
+from flask import Flask, render_template, flash, redirect, url_for, request, jsonify, session
+from flaskr.util.helpers import upload_file_to_s3, get_file, show_image, show_video, show_canny, show_depth, show_pose, show_videoresult
 
 
 ALLOWED_EXTENSIONS = {'mp4', 'txt', 'jpg', 'png'}
@@ -45,7 +45,7 @@ def create_app(test_config=None):
 
     @app.route('/index')
     def index():
-        return render_template('index.html')
+        return render_template('request.html')
     
     @app.route('/upload')
     def upload():
@@ -55,14 +55,64 @@ def create_app(test_config=None):
     def hello():
         return render_template('upload.html')
         # return render_template('index.html', result = result, result_video = result_video)
+    
+    @app.route('/response', methods=['GET'])
+    def response(): 
+        presigned_video = show_video()
+        presigned_image = show_image()
+        presigned_depth = show_depth() 
+        presigned_canny = show_canny()
+        presigned_pose = show_pose() 
+        presigned_videoresult = show_videoresult()
+        return render_template('response.html', presigned_video = presigned_video, presigned_image = presigned_image, presigned_canny = presigned_canny, presigned_depth = presigned_depth, presigned_pose = presigned_pose, presigned_videoresult = presigned_videoresult)
 
-
+    @app.route('/video')
+    def video_result():
+        file_key = session.get('uploaded_key')
+        if not file_key:
+            return "No video uploaded recently."
+        
+        presigned_video = show_video(file_key)
+        return render_template('videoUpload.html', presigned_video=presigned_video)
     # # Define the '/upload' route inside the app context
-    @app.route('/run', methods=['GET'])
+    @app.route('/run', methods=['POST'])
     def run():
-      return render_template('request.html')
-        # if 'user_file' not in request.files:
-        #     flash('No user_file key in request.files')
+        if 'user_file' not in request.files:
+            flash('No user_file key in request.files')
+        
+        
+        file = request.files['user_file'] 
+
+        if file.filename == '':
+            flash('No selected title')
+            return "Tidak ada namafile"
+        
+        if file and allowed_file(file.filename):
+            ext = os.path.splitext(file.filename)[1].lower() 
+            new_filename = "Video_" + rand_string() + ext
+            file_key = f"Input/{new_filename}"
+            output = upload_file_to_s3(file, new_filename)
+
+            if output:
+                flash("Success upload")
+                session['uploaded_key'] = file_key
+                return redirect(url_for('video_result'))
+        #         response = requests.post(endpoint_url, headers=headers, data=json.dumps(data))
+        #         if(response.status_code == 200):
+        #             print("Request Successful: ", response.json())
+        #             read_file = get_file(); 
+        #             return render_template('videoUpload.html', response_data = response.json(), read_file = read_file)
+        #         else:
+        #             print(f"Request failed with status code {response.status_code} : {response}")
+        #     else:
+        #         flash("Unable to upload")
+        #         return "Gagal upload"
+        # else:
+        #     flash("Extension not accepted")
+        #     return "Ekstensi tidak didukung"
+
+      
+      
 
         # file = request.files['user_file']
         # prefix = rand_string()
@@ -117,27 +167,8 @@ def create_app(test_config=None):
         #       }
         #   }
 
-        # if file.filename == '':
-        #     flash('No selected title')
-        #     return "Tidak ada namafile"
+        # 
 
-        # if file and allowed_file(file.filename):
-        #     output = upload_file_to_s3(file)
-
-        #     if output:
-        #         flash("Success upload")
-        #         response = requests.post(endpoint_url, headers=headers, data=json.dumps(data))
-        #         if(response.status_code == 200):
-        #             print("Request Successful: ", response.json())
-        #             read_file = get_file(); 
-        #             return render_template('request.html', response_data = response.json(), read_file = read_file)
-        #         else:
-        #             print(f"Request failed with status code {response.status_code} : {response}")
-        #     else:
-        #         flash("Unable to upload")
-        #         return "Gagal upload"
-        # else:
-        #     flash("Extension not accepted")
-        #     return "Ekstensi tidak didukung"
+        
 
     return app

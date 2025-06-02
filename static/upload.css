@@ -12,6 +12,10 @@ html {
     
     
   }
+
+  .modal-backdrop.show {
+    opacity: 0.2;
+}
   
   ul{
     color:rgb(255, 255, 255); 
@@ -239,3 +243,8 @@ html {
     opacity: 0;
 }
 
+.modal-notif{
+  font-size: 18px;
+  padding-top: 30px;
+  
+}

@@ -9,10 +9,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}" type="text/css">
     <script src="https://kit.fontawesome.com/66dba2cab1.js" crossorigin="anonymous"></script> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='upload-script.js') }}"></script>
   </head>
     
-</head>
+  <style>
+  .modal-dialog.custom-width {
+    max-width: 30%; 
+
+  }
+
+  
+</style>
 <body>
   <div class="page">
     <div class="sideBar">
@@ -37,13 +45,12 @@
     <div class="content">
       <div class="file-container">
         <div id="box">
-          <form action="{{ url_for('run') }}" method="GET" enctype="multipart/form-data">
+          <form id = "uploadForm" action="{{ url_for('run') }}" method="POST" enctype="multipart/form-data">
             <img id="image" src="static/white.jpg" width="1%" height="100%"/>
-            <input type="file" name="user_file" onchange="this.form.submit()" id="file" />
+            <input type="file" name="user_file" onchange="handleFileChange()" id="file" />
           </form>
-
       </div>
-
+    
         <div class="drag-area">
           <div class="icon">
             <i class="fa-solid fa-file-export"></i>
@@ -100,8 +107,29 @@
     </div>
         
     </div>
+    <!-- modal -->
+<div class="modal" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="false">
+  <div class="modal-dialog modal-dialog-centered custom-width">
+    <div class="modal-content text-center p-4">
+      <center><div class="spinner-border text-primary" role="status"></div></center>
+      <p class="modal-notif"> Initiating video upload. Please do not close this window. </p>
+    </div>
+  </div>
+</div>
+<!-- modal -->
   </div>
 </body>
+<script>
+function handleFileChange() {
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+
+    // Let modal render before submitting the form
+    setTimeout(() => {
+        document.getElementById('uploadForm').submit();
+    }, 150);
+}
+</script>
 </html>
 
 

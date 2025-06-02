@@ -18,11 +18,23 @@ def get_file():
 
     return response 
 
-def show_video(): 
+def show_video(file_key): 
     bucket = 'runpod-hizkia-fileupload'
     public_urls = [] 
     try:
-        for item in s3.list_objects_v2(Bucket=bucket, Prefix='Input/Video_')['Contents']: 
+        for item in s3.list_objects_v2(Bucket=bucket, Prefix= file_key)['Contents']: 
+            presigned_url = s3.generate_presigned_url('get_object', Params = {'Bucket':bucket, 'Key': item['Key']}, ExpiresIn = 100)
+            public_urls.append(presigned_url)
+    except Exception as e: 
+        pass 
+
+    return public_urls
+
+def show_videoresult(): 
+    bucket = 'runpod-hizkia-fileupload'
+    public_urls = [] 
+    try:
+        for item in s3.list_objects_v2(Bucket=bucket, Prefix='Output/VideoResult_')['Contents']: 
             presigned_url = s3.generate_presigned_url('get_object', Params = {'Bucket':bucket, 'Key': item['Key']}, ExpiresIn = 100)
             public_urls.append(presigned_url)
     except Exception as e: 
@@ -42,16 +54,50 @@ def show_image():
         pass 
 
     return public_urls
-    
-    
 
-def upload_file_to_s3(file, acl = "public-read"):
-    filename =secure_filename(file.filename)
+def show_depth():
+    bucket = 'runpod-hizkia-fileupload' 
+    public_urls = [] 
+    try:
+        for item in s3.list_objects_v2(Bucket=bucket, Prefix='Output/Depth_')['Contents']: 
+            presigned_url = s3.generate_presigned_url('get_object', Params = {'Bucket':bucket, 'Key': item['Key']}, ExpiresIn = 100)
+            public_urls.append(presigned_url)
+    except Exception as e: 
+        pass 
+
+    return public_urls
+
+def show_pose():
+    bucket = 'runpod-hizkia-fileupload' 
+    public_urls = [] 
+    try:
+        for item in s3.list_objects_v2(Bucket=bucket, Prefix='Output/Pose_')['Contents']: 
+            presigned_url = s3.generate_presigned_url('get_object', Params = {'Bucket':bucket, 'Key': item['Key']}, ExpiresIn = 100)
+            public_urls.append(presigned_url)
+    except Exception as e: 
+        pass 
+
+    return public_urls
+
+def show_canny():
+    bucket = 'runpod-hizkia-fileupload' 
+    public_urls = [] 
+    try:
+        for item in s3.list_objects_v2(Bucket=bucket, Prefix='Output/Canny_')['Contents']: 
+            presigned_url = s3.generate_presigned_url('get_object', Params = {'Bucket':bucket, 'Key': item['Key']}, ExpiresIn = 100)
+            public_urls.append(presigned_url)
+    except Exception as e: 
+        pass 
+
+    return public_urls
+    
+def upload_file_to_s3(file, filename, acl = "public-read"):
+    folder = f"Input/{filename}"
     try:
         s3.upload_fileobj(
             file, 
             'runpod-hizkia-fileupload', 
-            file.filename, 
+            folder, 
             ExtraArgs = {
                 "ACL": acl, 
                 "ContentType": file.content_type, 
