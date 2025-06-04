@@ -147,4 +147,49 @@ html {
     margin-left: 5px;
     font-family: 'Ubuntu Mono';font-size: 22px;
   }
+
+
+  .video-input{
+    padding-right: 450px;  
+  }
+
+  .box{
+    padding-top: 120px; 
+    padding-left: 570px; 
+    display: flex; 
+    position: absolute;
+    justify-content: flex-end;
+  }
+
+  input[type=text] {
+  border-radius: 7px;
+  width:400px;
+  height: 100px; 
+  vertical-align: top;
+  line-height: 1.5; /* ensure readable line spacing */
+  resize: none; /* optional: to prevent manual resizing */
+}
+
+
+
+textarea {
+  resize: none;
+  border-radius: 7px;
+}
+
+.submit-container {
+  text-align: right;
+  margin-top: 10px;
+}
+
+input[type=submit]{
+  border-radius: 7px;
+  font-family: sans-serif;
+  width: 130px;
+  height: 40px;
+  background: dodgerblue;
+  border-radius: 6px;
+  transition: all .3s cubic-bezier(0.67, 0.17, 0.40, 0.83);
+  color: white; 
+}
   

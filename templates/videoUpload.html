@@ -57,6 +57,15 @@
           </video>
           {% endfor %}
         </div>
+          <div class="box">
+          <form id = "uploadForm" action="{{ url_for('runPrompt') }}" method="POST" enctype="multipart/form-data">
+            <textarea name="promptPositive" onchange="handleFileChange()" id="promptPositive" rows="4" cols="50" placeholder="Enter positive prompt..."></textarea> <br><br>
+            <textarea name="promptNegative" onchange="handleFileChange()" id="promptNegative" rows="4" cols="50" placeholder="Enter negative prompt..."></textarea> <br><br>
+            <div class="submit-container">
+               <input type="submit" value="Submit">
+            </div>
+          </form>
+      </div>
     </div>
 
     <div class="terminal">

@@ -86,7 +86,70 @@ def create_app(test_config=None):
         
         presigned_video = show_video(file_key)
         return render_template('videoUpload.html', presigned_video=presigned_video)
-    # # Define the '/upload' route inside the app context
+    
+    @app.route('/runPrompt', methods=['POST'])
+    def runPrompt(): 
+        data = request.form
+
+        # return {
+        # 'promptPositive' : data['promptPositive'],
+        # 'promptNegative' : data['promptNegative']
+
+        file = request.files['user_file']
+        prefix = rand_string()
+        workflow = {
+              "input": {
+                  "workflow": {
+                  "10": {
+                      "inputs": {
+                        "video": f"https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/{file.filename}",
+                        "force_rate": 0,
+                        "force_size": "Disabled",
+                        "custom_width": 512,
+                        "custom_height": 512,
+                        "frame_load_cap": 0,
+                        "skip_first_frames": 0,
+                        "select_every_nth": 1
+                      },
+                      "class_type": "VHS_LoadVideoPath",
+                      "_meta": {
+                        "title": "Load Video (Path) 🎥🅥🅗🅢"
+                      }
+                    },
+                    "12": {
+                      "inputs": {
+                        "a": 6.283185307179586,
+                        "bg_threshold": 0.1,
+                        "resolution": 512,
+                        "image": [
+                          "10",
+                          0
+                        ]
+                      },
+                      "class_type": "MiDaS-DepthMapPreprocessor",
+                      "_meta": {
+                        "title": "MiDaS Depth Map"
+                      }
+                    },
+                    "14": {
+                      "inputs": {
+                        "filename_prefix": f"{prefix}",
+                        "images": [
+                          "12",
+                          0
+                        ]
+                      },
+                      "class_type": "SaveImageS3",
+                      "_meta": {
+                        "title": "Save Image to S3"
+                      }
+                    }
+                  }
+              }
+          }
+
+        
+    
     @app.route('/run', methods=['POST'])
     def run():
         if 'user_file' not in request.files:
@@ -123,64 +186,5 @@ def create_app(test_config=None):
         #     flash("Extension not accepted")
         #     return "Ekstensi tidak didukung"
 
-      
-      
-
-        # file = request.files['user_file']
-        # prefix = rand_string()
-        # data = {
-        #       "input": {
-        #           "workflow": {
-        #           "10": {
-        #               "inputs": {
-        #                 "video": f"https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/{file.filename}",
-        #                 "force_rate": 0,
-        #                 "force_size": "Disabled",
-        #                 "custom_width": 512,
-        #                 "custom_height": 512,
-        #                 "frame_load_cap": 0,
-        #                 "skip_first_frames": 0,
-        #                 "select_every_nth": 1
-        #               },
-        #               "class_type": "VHS_LoadVideoPath",
-        #               "_meta": {
-        #                 "title": "Load Video (Path) 🎥🅥🅗🅢"
-        #               }
-        #             },
-        #             "12": {
-        #               "inputs": {
-        #                 "a": 6.283185307179586,
-        #                 "bg_threshold": 0.1,
-        #                 "resolution": 512,
-        #                 "image": [
-        #                   "10",
-        #                   0
-        #                 ]
-        #               },
-        #               "class_type": "MiDaS-DepthMapPreprocessor",
-        #               "_meta": {
-        #                 "title": "MiDaS Depth Map"
-        #               }
-        #             },
-        #             "14": {
-        #               "inputs": {
-        #                 "filename_prefix": f"{prefix}",
-        #                 "images": [
-        #                   "12",
-        #                   0
-        #                 ]
-        #               },
-        #               "class_type": "SaveImageS3",
-        #               "_meta": {
-        #                 "title": "Save Image to S3"
-        #               }
-        #             }
-        #           }
-        #       }
-        #   }
-
-        # 
-
-        
 
     return app
