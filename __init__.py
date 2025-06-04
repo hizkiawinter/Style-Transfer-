@@ -3,6 +3,7 @@ import requests
 import json 
 import random
 import string 
+from celery import Celery
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify, session
 from flaskr.util.helpers import upload_file_to_s3, get_file, show_image, show_video, show_canny, show_depth, show_pose, show_videoresult
 
@@ -24,6 +25,17 @@ def rand_string():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def celery_init_app(app: Flask) -> Celery: 
+    class FlaskTask: 
+        def __call__(self, *args: object, **kwargs: object) -> object: 
+            with app.app_context(): 
+                return self.run(*args, **kwargs)
+    celery_app = Celery(app.name, task_cls = FlaskTask)
+    celery_app.config_from_object(app.config["CELERY"])
+    celery_app.set_default()
+    app.extensions["celery"] = celery_app 
+    return celery_app
 
 
 def create_app(test_config=None):
