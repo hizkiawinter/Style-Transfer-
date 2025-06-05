@@ -3,14 +3,22 @@ import requests
 import json 
 import random
 import string 
-from celery import Celery
+import time
+import subprocess
+from flask_socketio import SocketIO, emit
+from datetime import date, datetime 
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify, session
 from flaskr.util.helpers import upload_file_to_s3, get_file, show_image, show_video, show_canny, show_depth, show_pose, show_videoresult
 
 
 ALLOWED_EXTENSIONS = {'mp4', 'txt', 'jpg', 'png'}
 api_key = "rpa_7T3TQZWAL1HRKBWECWSD0FJ6ZL8453OSAD6KWNOI1sxsyz"
-endpoint_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/runsync"
+log_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/status/"
+endpoint_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/run"
+now = datetime.now()
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+socketio = SocketIO()
+
 
 headers = {
     "Authorization" : f"Bearer {api_key}",
@@ -26,16 +34,43 @@ def rand_string():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def celery_init_app(app: Flask) -> Celery: 
-    class FlaskTask: 
-        def __call__(self, *args: object, **kwargs: object) -> object: 
-            with app.app_context(): 
-                return self.run(*args, **kwargs)
-    celery_app = Celery(app.name, task_cls = FlaskTask)
-    celery_app.config_from_object(app.config["CELERY"])
-    celery_app.set_default()
-    app.extensions["celery"] = celery_app 
-    return celery_app
+@socketio.on("my_event")
+def checklog(data):  # receive data from client
+    sid = request.sid
+    prev_log = ""
+    # Get proc_id from event data, NOT from session (unless you handle sessions on websocket)
+    proc_id = data.get("proc_id")
+    if not proc_id:
+        emit("log_update", {"data": "Please give your prompt to start the style transfer process"}, room=sid)
+        return
+
+    log_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/status/"
+
+    while True:
+        try:
+            url = log_url + proc_id
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 200:
+                current_log = response.text
+                if current_log != prev_log:
+                    emit("log_update", {"data": response.text}, room=sid)
+                    prev_log = current_log
+
+                # Example: stop loop if job is finished
+                status = response.json().get("status", "")
+                if status in ["COMPLETED", "FAILED", "CANCELLED"]:
+                    break
+
+            else:
+                emit("log_update", {"data": f"Error: {response.status_code}"}, room=sid)
+
+            socketio.sleep(3)
+
+        except Exception as e:
+            emit("log_update", {"data": f"Exception: {str(e)}"}, room=sid)
+            break
+
 
 
 def create_app(test_config=None):
@@ -44,7 +79,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
-
+    socketio.init_app(app)
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
@@ -80,7 +115,7 @@ def create_app(test_config=None):
 
     @app.route('/video')
     def video_result():
-        file_key = session.get('uploaded_key')
+        file_key = session.get('file_key')
         if not file_key:
             return "No video uploaded recently."
         
@@ -90,66 +125,85 @@ def create_app(test_config=None):
     @app.route('/runPrompt', methods=['POST'])
     def runPrompt(): 
         data = request.form
+        file_key = session.get('file_key')
+        unique_string = session.get('unique_string')
 
-        # return {
-        # 'promptPositive' : data['promptPositive'],
-        # 'promptNegative' : data['promptNegative']
+        # promptPositive = data['promptPositive'],
+        # promptNegative = data['promptNegative'],
+        # video_input= file_key,
+        # unique_string = unique_string
 
-        file = request.files['user_file']
-        prefix = rand_string()
-        workflow = {
-              "input": {
-                  "workflow": {
-                  "10": {
-                      "inputs": {
-                        "video": f"https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/{file.filename}",
-                        "force_rate": 0,
-                        "force_size": "Disabled",
-                        "custom_width": 512,
-                        "custom_height": 512,
-                        "frame_load_cap": 0,
-                        "skip_first_frames": 0,
-                        "select_every_nth": 1
-                      },
-                      "class_type": "VHS_LoadVideoPath",
-                      "_meta": {
-                        "title": "Load Video (Path) 🎥🅥🅗🅢"
-                      }
-                    },
-                    "12": {
-                      "inputs": {
-                        "a": 6.283185307179586,
-                        "bg_threshold": 0.1,
-                        "resolution": 512,
-                        "image": [
-                          "10",
-                          0
-                        ]
-                      },
-                      "class_type": "MiDaS-DepthMapPreprocessor",
-                      "_meta": {
-                        "title": "MiDaS Depth Map"
-                      }
-                    },
-                    "14": {
-                      "inputs": {
-                        "filename_prefix": f"{prefix}",
-                        "images": [
-                          "12",
-                          0
-                        ]
-                      },
-                      "class_type": "SaveImageS3",
-                      "_meta": {
-                        "title": "Save Image to S3"
-                      }
+        payload = {
+                "input":
+                {
+                    "workflow":
+                    {
+                        "34":
+                        {
+                            "inputs":
+                            {
+                                "video": f"https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/{file_key}",
+                                "force_rate": 0,
+                                "force_size": "Disabled",
+                                "custom_width": 512,
+                                "custom_height": 512,
+                                "frame_load_cap": 0,
+                                "skip_first_frames": 0,
+                                "select_every_nth": 1
+                            },
+                            "class_type": "VHS_LoadVideoPath",
+                            "_meta":
+                            {
+                                "title": "Load Video (Path) 🎥🅥🅗🅢"
+                            }
+                        },
+                        "35":
+                        {
+                            "inputs":
+                            {
+                                "a": 6.283185307179586,
+                                "bg_threshold": 0.1,
+                                "resolution": 512,
+                                "image": [
+                                    "34",
+                                    0
+                                ]
+                            },
+                            "class_type": "MiDaS-DepthMapPreprocessor",
+                            "_meta":
+                            {
+                                "title": "MiDaS Depth Map"
+                            }
+                        },
+                        "36":
+                        {
+                            "inputs":
+                            {
+                                "filename_prefix": "test",
+                                "images": [
+                                    "35",
+                                    0
+                                ]
+                            },
+                            "class_type": "SaveImageS3",
+                            "_meta":
+                            {
+                                "title": "Save Image to S3"
+                            }
+                        }
                     }
-                  }
-              }
-          }
-
+                }
+            }
         
-    
+        try:
+            response = requests.post(endpoint_url, headers=headers, json=payload)
+            proc_info = response.json()
+            proc_id = proc_info.get("id")
+            return redirect(url_for('video_result', proc_id = proc_id))
+            
+        except Exception as e:  
+            return jsonify({"error": str(e)}), 500  
+
     @app.route('/run', methods=['POST'])
     def run():
         if 'user_file' not in request.files:
@@ -164,27 +218,22 @@ def create_app(test_config=None):
         
         if file and allowed_file(file.filename):
             ext = os.path.splitext(file.filename)[1].lower() 
-            new_filename = "Video_" + rand_string() + ext
+            unique_string = rand_string() 
+            new_filename = "Video_" + unique_string + ext
             file_key = f"Input/{new_filename}"
+
             output = upload_file_to_s3(file, new_filename)
 
             if output:
                 flash("Success upload")
-                session['uploaded_key'] = file_key
+                session['unique_string'] = unique_string
+                session['file_key'] = file_key
                 return redirect(url_for('video_result'))
-        #         response = requests.post(endpoint_url, headers=headers, data=json.dumps(data))
-        #         if(response.status_code == 200):
-        #             print("Request Successful: ", response.json())
-        #             read_file = get_file(); 
-        #             return render_template('videoUpload.html', response_data = response.json(), read_file = read_file)
-        #         else:
-        #             print(f"Request failed with status code {response.status_code} : {response}")
-        #     else:
-        #         flash("Unable to upload")
-        #         return "Gagal upload"
-        # else:
-        #     flash("Extension not accepted")
-        #     return "Ekstensi tidak didukung"
+        
 
 
     return app
+
+if __name__ == '__main__':
+    app = create_app()
+    socketio.run(app)

@@ -20,6 +20,8 @@
 <!-- Video.js -->
 <link href="https://vjs.zencdn.net/8.22.0/video-js.css" rel="stylesheet" />
 <script src="https://vjs.zencdn.net/8.22.0/video.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+
 
 <!-- Your custom CSS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='videoUpload.css') }}" type="text/css">
@@ -58,7 +60,7 @@
           {% endfor %}
         </div>
           <div class="box">
-          <form id = "uploadForm" action="{{ url_for('runPrompt') }}" method="POST" enctype="multipart/form-data">
+          <form id = "uploadPrompt" action="{{ url_for('runPrompt') }}" method="POST" enctype="multipart/form-data">
             <textarea name="promptPositive" onchange="handleFileChange()" id="promptPositive" rows="4" cols="50" placeholder="Enter positive prompt..."></textarea> <br><br>
             <textarea name="promptNegative" onchange="handleFileChange()" id="promptNegative" rows="4" cols="50" placeholder="Enter negative prompt..."></textarea> <br><br>
             <div class="submit-container">
@@ -68,25 +70,35 @@
       </div>
     </div>
 
-    <div class="terminal">
-      <span class="terminalDate">2025-06-01 09:25:30.725 </span> <span class="terminalOutput"> info | 4fexz9ud7m2epl | {"status":"Status: Image is up to date for registry.runpod.net/hizkiawinter-runpod-worker-comfy:6ee1cee8a"}</span><br> 
-      <span class="terminalDate">2025-06-01  09:25:30.723 </span> <span class="terminalOutput"> info | 4fexz9ud7m2epl | {"status":"Digest: sha256:d910542cbeb8675ec31627f587571bd75d001376d4003a7138f33c13e81d7cb1"}</span><br> 
-      <span class="terminalDate">2025-06-01  09:25:30.719 </span> <span class="terminalOutput"> info | 4fexz9ud7m2epl | {"status":"Pulling from hizkiawinter-runpod-worker-comfy","id":"6ee1cee8a"}</span><br>
-      <span class="terminalDate">2025-05-31  20:50:38.406 </span> <span class="terminalOutput"> info | hlofelpynl1ojn | {"status":"Status: Downloaded newer image for registry.runpod.net/hizkiawinter-runpod-worker-comfy:6ee1cee8a"}</span><br>
-      <span class="terminalDate">2025-05-31  20:50:38.405 </span> <span class="terminalOutput"> info | hlofelpynl1ojn | {"status":"Digest: sha256:d910542cbeb8675ec31627f587571bd75d001376d4003a7138f33c13e81d7cb1"}</span><br>
-      <span class="terminalDate">2025-05-31  20:50:38.388 </span> <span class="terminalOutput"> info | hlofelpynl1ojn | {"status":"Pull complete","progressDetail":{},"id":"73501008f432"}</span><br>
-    </div>
-
+    <div id= "terminal"class="terminal">
     </div>
     </div>
 
     
   </div>
-
   
   
 </body>
 
+<script>
+  const socket = io();
+  const urlParams = new URLSearchParams(window.location.search);
+  const proc_id = urlParams.get('proc_id');
+  console.log(proc_id)
 
+  socket.on("connect", () => {
+    console.log("Connected to server");
+    socket.emit("my_event", {proc_id: proc_id});  // start polling logs
+  });
 
+  socket.on("log_update", (msg) => {
+    const terminal = document.getElementById("terminal");
+    terminal.innerHTML += msg.data + "<br>";
+    terminal.scrollTop = terminal.scrollHeight;
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected from server");
+  });
+</script>
 
