@@ -70,7 +70,8 @@
       </div>
     </div>
 
-    <div id= "terminal"class="terminal">
+    <div class="terminal">
+      <span id="terminalDate" class="terminalDate"></span><span id="terminalOutput" class="terminalOutput"></span><br> 
     </div>
     </div>
 
@@ -91,9 +92,28 @@
     socket.emit("my_event", {proc_id: proc_id});  // start polling logs
   });
 
-  socket.on("log_update", (msg) => {
-    const terminal = document.getElementById("terminal");
-    terminal.innerHTML += msg.data + "<br>";
+   socket.on("log_update", (msg) => {
+    const timestamp = msg.timestamp || "";
+    const text = msg.message || "";
+
+    const terminal = document.querySelector(".terminal");
+
+    // Create timestamp span
+    const dateSpan = document.createElement("span");
+    dateSpan.classList.add("terminalDate");
+    dateSpan.textContent = `[${timestamp}] `;
+
+    // Create log text span
+    const outputSpan = document.createElement("span");
+    outputSpan.classList.add("terminalOutput");
+    outputSpan.textContent = text;
+
+    // Append both spans and a line break to terminal
+    terminal.appendChild(dateSpan);
+    terminal.appendChild(outputSpan);
+    terminal.appendChild(document.createElement("br"));
+
+    // Auto scroll to bottom
     terminal.scrollTop = terminal.scrollHeight;
   });
 

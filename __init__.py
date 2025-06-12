@@ -13,10 +13,8 @@ from flaskr.util.helpers import upload_file_to_s3, get_file, show_image, show_vi
 
 ALLOWED_EXTENSIONS = {'mp4', 'txt', 'jpg', 'png'}
 api_key = "rpa_7T3TQZWAL1HRKBWECWSD0FJ6ZL8453OSAD6KWNOI1sxsyz"
-log_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/status/"
-endpoint_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/run"
-now = datetime.now()
-dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+log_url = "https://api.runpod.ai/v2/fa4ibxru565wt3/status/"
+endpoint_url = "https://api.runpod.ai/v2/fa4ibxru565wt3/run"
 socketio = SocketIO()
 
 
@@ -44,7 +42,7 @@ def checklog(data):  # receive data from client
         emit("log_update", {"data": "Please give your prompt to start the style transfer process"}, room=sid)
         return
 
-    log_url = "https://api.runpod.ai/v2/vz67ieid7rzwxb/status/"
+    log_url = "https://api.runpod.ai/v2/fa4ibxru565wt3/status/"
 
     while True:
         try:
@@ -54,7 +52,12 @@ def checklog(data):  # receive data from client
             if response.status_code == 200:
                 current_log = response.text
                 if current_log != prev_log:
-                    emit("log_update", {"data": response.text}, room=sid)
+                    now = datetime.now()
+                    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+                    emit("log_update", {
+                        "timestamp": dt_string, 
+                        "message": response.text
+                    }, room=sid)
                     prev_log = current_log
 
                 # Example: stop loop if job is finished
@@ -138,59 +141,473 @@ def create_app(test_config=None):
                 {
                     "workflow":
                     {
-                        "34":
-                        {
-                            "inputs":
-                            {
-                                "video": f"https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/{file_key}",
-                                "force_rate": 0,
-                                "force_size": "Disabled",
-                                "custom_width": 512,
-                                "custom_height": 512,
-                                "frame_load_cap": 0,
-                                "skip_first_frames": 0,
-                                "select_every_nth": 1
-                            },
-                            "class_type": "VHS_LoadVideoPath",
-                            "_meta":
-                            {
-                                "title": "Load Video (Path) 🎥🅥🅗🅢"
-                            }
-                        },
-                        "35":
-                        {
-                            "inputs":
-                            {
-                                "a": 6.283185307179586,
-                                "bg_threshold": 0.1,
-                                "resolution": 512,
-                                "image": [
-                                    "34",
-                                    0
-                                ]
-                            },
-                            "class_type": "MiDaS-DepthMapPreprocessor",
-                            "_meta":
-                            {
-                                "title": "MiDaS Depth Map"
-                            }
-                        },
-                        "36":
-                        {
-                            "inputs":
-                            {
-                                "filename_prefix": "test",
-                                "images": [
-                                    "35",
-                                    0
-                                ]
-                            },
-                            "class_type": "SaveImageS3",
-                            "_meta":
-                            {
-                                "title": "Save Image to S3"
-                            }
-                        }
+"2": {
+    "inputs": {
+      "vae_name": "sdxl_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "10": {
+    "inputs": {
+      "samples": [
+        "289",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "53": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "width": 1024,
+      "height": 576,
+      "crop": "center",
+      "image": [
+        "367",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale Image"
+    }
+  },
+  "56": {
+    "inputs": {
+      "pixels": [
+        "53",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "70": {
+    "inputs": {
+      "control_net_name": "xinsir-controlnet-scribble.safetensors"
+    },
+    "class_type": "ControlNetLoaderAdvanced",
+    "_meta": {
+      "title": "Load Advanced ControlNet Model 🛂🅐🅒🅝"
+    }
+  },
+  "110": {
+    "inputs": {
+      "ckpt_name": "juggernautXL_juggXIByRundiffusion.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "127": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "masterpiece, flat color, 1girl, blonde hair, simple background, looking at viewer, smile, white shirt, pink shirt, anime style, blue eyes",
+      "text_l": "masterpiece, flat color, 1girl, blonde hair, simple background, looking at viewer, smile, white shirt, pink shirt, anime style, blue eyes",
+      "clip": [
+        "110",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "128": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "(worst quality, low quality:1)",
+      "text_l": "(worst quality, low quality:1)",
+      "clip": [
+        "110",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "164": {
+    "inputs": {
+      "images": [
+        "427",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "249": {
+    "inputs": {
+      "beta_schedule": "linear (HotshotXL/default)",
+      "model": [
+        "110",
+        0
+      ],
+      "m_models": [
+        "250",
+        0
+      ],
+      "context_options": [
+        "425",
+        0
+      ],
+      "sample_settings": [
+        "422",
+        0
+      ]
+    },
+    "class_type": "ADE_UseEvolvedSampling",
+    "_meta": {
+      "title": "Use Evolved Sampling 🎭🅐🅓②"
+    }
+  },
+  "250": {
+    "inputs": {
+      "start_percent": 0,
+      "end_percent": 1,
+      "motion_model": [
+        "304",
+        0
+      ]
+    },
+    "class_type": "ADE_ApplyAnimateDiffModel",
+    "_meta": {
+      "title": "Apply AnimateDiff Model (Adv.) 🎭🅐🅓②"
+    }
+  },
+  "252": {
+    "inputs": {
+      "add_noise": True,
+      "noise_seed": 0,
+      "cfg": 2,
+      "model": [
+        "249",
+        0
+      ],
+      "positive": [
+        "127",
+        0
+      ],
+      "negative": [
+        "128",
+        0
+      ],
+      "sampler": [
+        "255",
+        0
+      ],
+      "sigmas": [
+        "258",
+        0
+      ],
+      "latent_image": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "SamplerCustom",
+    "_meta": {
+      "title": "SamplerCustom"
+    }
+  },
+  "255": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "258": {
+    "inputs": {
+      "sigmas": [
+        "375",
+        0
+      ]
+    },
+    "class_type": "FlipSigmas",
+    "_meta": {
+      "title": "FlipSigmas"
+    }
+  },
+  "280": {
+    "inputs": {
+      "beta_schedule": "linear (HotshotXL/default)",
+      "model": [
+        "110",
+        0
+      ],
+      "m_models": [
+        "371",
+        0
+      ],
+      "context_options": [
+        "425",
+        0
+      ],
+      "sample_settings": [
+        "414",
+        0
+      ]
+    },
+    "class_type": "ADE_UseEvolvedSampling",
+    "_meta": {
+      "title": "Use Evolved Sampling 🎭🅐🅓②"
+    }
+  },
+  "289": {
+    "inputs": {
+      "add_noise": False,
+      "noise_seed": 0,
+      "cfg": 5,
+      "model": [
+        "280",
+        0
+      ],
+      "positive": [
+        "396",
+        0
+      ],
+      "negative": [
+        "396",
+        1
+      ],
+      "sampler": [
+        "255",
+        0
+      ],
+      "sigmas": [
+        "375",
+        0
+      ],
+      "latent_image": [
+        "252",
+        0
+      ]
+    },
+    "class_type": "SamplerCustom",
+    "_meta": {
+      "title": "SamplerCustom"
+    }
+  },
+  "296": {
+    "inputs": {
+      "images": [
+        "53",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "304": {
+    "inputs": {
+      "model_name": "hotshotxl_mm_v1.pth"
+    },
+    "class_type": "ADE_LoadAnimateDiffModel",
+    "_meta": {
+      "title": "Load AnimateDiff Model 🎭🅐🅓②"
+    }
+  },
+  "312": {
+    "inputs": {
+      "samples": [
+        "252",
+        0
+      ],
+      "vae": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "313": {
+    "inputs": {
+      "images": [
+        "312",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "367": {
+    "inputs": {
+      "video": "https://runpod-hizkia-fileupload.s3.ap-southeast-1.amazonaws.com/Input/Video_1wIobgDU2n94AqzQ.mp4",
+      "force_rate": 0,
+      "force_size": "Disabled",
+      "custom_width": 512,
+      "custom_height": 512,
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 2
+    },
+    "class_type": "VHS_LoadVideoPath",
+    "_meta": {
+      "title": "Load Video (Path) 🎥🅥🅗🅢"
+    }
+  },
+  "371": {
+    "inputs": {
+      "start_percent": 0,
+      "end_percent": 1,
+      "motion_model": [
+        "304",
+        0
+      ]
+    },
+    "class_type": "ADE_ApplyAnimateDiffModel",
+    "_meta": {
+      "title": "Apply AnimateDiff Model (Adv.) 🎭🅐🅓②"
+    }
+  },
+  "375": {
+    "inputs": {
+      "model_type": "SDXL",
+      "steps": 16,
+      "denoise": 1
+    },
+    "class_type": "AlignYourStepsScheduler",
+    "_meta": {
+      "title": "AlignYourStepsScheduler"
+    }
+  },
+  "396": {
+    "inputs": {
+      "strength": 0.4,
+      "start_percent": 0,
+      "end_percent": 0.4,
+      "positive": [
+        "127",
+        0
+      ],
+      "negative": [
+        "128",
+        0
+      ],
+      "control_net": [
+        "70",
+        0
+      ],
+      "image": [
+        "427",
+        0
+      ]
+    },
+    "class_type": "ACN_AdvancedControlNetApply",
+    "_meta": {
+      "title": "Apply Advanced ControlNet 🛂🅐🅒🅝"
+    }
+  },
+  "414": {
+    "inputs": {
+      "batch_offset": 0,
+      "noise_type": "empty",
+      "seed_gen": "comfy",
+      "seed_offset": 0,
+      "adapt_denoise_steps": False
+    },
+    "class_type": "ADE_AnimateDiffSamplingSettings",
+    "_meta": {
+      "title": "Sample Settings 🎭🅐🅓"
+    }
+  },
+  "422": {
+    "inputs": {
+      "batch_offset": 0,
+      "noise_type": "empty",
+      "seed_gen": "comfy",
+      "seed_offset": 0,
+      "adapt_denoise_steps": False
+    },
+    "class_type": "ADE_AnimateDiffSamplingSettings",
+    "_meta": {
+      "title": "Sample Settings 🎭🅐🅓"
+    }
+  },
+  "425": {
+    "inputs": {
+      "context_length": 8,
+      "context_stride": 1,
+      "context_overlap": 2,
+      "fuse_method": "pyramid",
+      "use_on_equal_length": False,
+      "start_percent": 0,
+      "guarantee_steps": 1
+    },
+    "class_type": "ADE_StandardUniformContextOptions",
+    "_meta": {
+      "title": "Context Options◆Standard Uniform 🎭🅐🅓"
+    }
+  },
+  "427": {
+    "inputs": {
+      "coarse": "disable",
+      "resolution": 576,
+      "image": [
+        "53",
+        0
+      ]
+    },
+    "class_type": "LineArtPreprocessor",
+    "_meta": {
+      "title": "Realistic Lineart"
+    }
+  },
+  "428": {
+    "inputs": {
+      "filename_prefix": "Image",
+      "images": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "SaveImageS3",
+    "_meta": {
+      "title": "Save Image to S3"
+    }
+  }
                     }
                 }
             }
@@ -229,9 +646,7 @@ def create_app(test_config=None):
                 session['unique_string'] = unique_string
                 session['file_key'] = file_key
                 return redirect(url_for('video_result'))
-        
-
-
+    
     return app
 
 if __name__ == '__main__':
